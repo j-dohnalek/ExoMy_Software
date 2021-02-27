@@ -122,3 +122,35 @@ class Motors():
 
         for wheel_name, motor_pin in self.pins['drive'].items():
             self.pwm.set_pwm(motor_pin, 0, duty_cycle)
+                      
+    # -------------------------------------
+    # Enable to move head
+    # -------------------------------------
+    
+    # GPIO Pins for X, Y head motors
+    X, Y = 12, 13
+    
+    def _angle_map(self, x, in_min, in_max, out_min, out_max):
+        """
+        Arduino map function ported to python
+        
+        https://www.arduino.cc/reference/en/language/functions/math/map/
+        """
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+
+
+    def move_head(self, axis, position):
+        """
+        Move the head of the robot
+
+        :param axis: boolean
+        :param position: 0-180
+        """
+        if not 0 <= position <= 180:
+            return
+        
+        motor = self.Y
+        if axis:
+            motor = self.X
+
+        self.pwm.set_pwm(motor, 0, int(self._angle_map(position, 0, 180, 120, 485)))
