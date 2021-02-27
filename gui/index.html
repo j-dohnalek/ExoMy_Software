@@ -3,7 +3,9 @@
 
 <head>
   <meta charset="utf-8" />
-
+  
+  <link rel="stylesheet" href="bootstrap.min.css">
+  
   <script type="text/javascript" src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
   <script src="./node_modules/nipplejs/dist/nipplejs.js"></script>
   <script type="text/javascript" type="text/javascript">
@@ -38,7 +40,7 @@
         threshold: 0.1,
         position: { left: '50%', top: '50%' },
         mode: 'static',
-        size: 150,
+        size: 250,
         color: 'black'
       };
       manager = nipplejs.create(options);
@@ -79,10 +81,11 @@
         console.log('End function called')
       });
     }
+
     window.onload = function () {
       createJoystick();
       // Video output
-      stream_url = '//' + host_url + ':8080/stream?topic=/pi_cam/image_raw';
+      stream_url = "//" + host_url + ":8080/stream?topic=/pi_cam/image_raw&invert=true";
       console.log(stream_url);
       document.getElementById("video_output").src = stream_url;
     }
@@ -90,7 +93,7 @@
     joy_listener = new ROSLIB.Topic({
       ros: ros,
       name: "/joy",
-      messageType: 'sensor_msgs/Joy'
+      messageType: "sensor_msgs/Joy"
     });
 
     joy_event = function () {
@@ -98,12 +101,14 @@
         axes: axes,
         buttons: buttons
       });
+
       joy_listener.publish(joy);
+
       console.log(axes)
       console.log(buttons)
     }
 
-     button_clicked = function (button_index) {
+    button_clicked = function (button_index) {
       // The desired button index can be found by listening to the /joy ros message
       // or by checking in the wiki for the gamepad mapping.
       // Set axes to 0 to prevent driving during mode change.
@@ -114,33 +119,107 @@
       buttons[button_index] = 0;
     }
 
+    head_listener = new ROSLIB.Topic({
+      ros: ros,
+      name: "/robot_head",
+      messageType: "exomy/RobotHeadCommand"
+    });
+
+    function move_head(axis, angle){
+      var head = new ROSLIB.Message({
+        axis: axis,
+        position: parseInt(angle),
+      });
+
+      head_listener.publish(head);    
+    }
+
   </script>
   <link rel="stylesheet" type="text/css" href="style.css">
 
 </head>
 
 <body>
-  <main>
-    <div class="wrapper">
-      <div class="left" id="left">
-        <div class="joy_container" id="joy_container"></div>
+  <div class="container-fluid">
+    
+    <div class="row">
+      <div class="col-2">
+        <h5 class="pl-2 pt-2">X Axis</h5>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-block btn-primary" onclick="move_head(true, 0)">0&deg;</button>
+      </div>
+      <div class="col-2">
+          <button class="btn btn-block btn-primary" onclick="move_head(true, 45)">45&deg;</button>
+      </div>
+      <div class="col-2">
+          <button class="btn btn-block btn-secondary" onclick="move_head(true, 90)">90&deg;</button>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-block btn-primary" onclick="move_head(true, 135)">135&deg;</button>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-block btn-primary" onclick="move_head(true, 180)">180&deg;</button>
+      </div>
+    </div>
+    
+    <div class="row mt-2">
+      <div class="col-2">
+        <h5 class="pl-2 pt-2">Y Axis</h5>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-block btn-primary" onclick="move_head(false, 0)">0&deg;</button>
+      </div>
+      <div class="col-2">
+          <button class="btn btn-block btn-primary" onclick="move_head(false, 45)">45&deg;</button>
+      </div>
+      <div class="col-2">
+          <button class="btn btn-block btn-secondary" onclick="move_head(false, 90)">90&deg;</button>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-block btn-primary" onclick="move_head(false, 135)">135&deg;</button>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-block btn-primary" onclick="move_head(false, 180)">180&deg;</button>
+      </div>
+    </div>
+
+    <div class="row mt-2">
+      <div class="col-4">
+        <div class="joy_container" id="joy_container" style="width:250px;height:250px;"></div>
       </div>
 
-      <div class="middle" id="middle">
-        <div class="image_container">
+      <div class="col-5">
           <img id="video_output" style="object-fit:cover; width:100%;"></img>
-        </div>
       </div>
-      <div class="right" id="right">
-        <div class="button_container">
-          <button class="button buttonY" onclick="button_clicked(3)">CRABBING</button>
-          <button class="button buttonX" onclick="button_clicked(0)">SPOT TURN</button>
-          <button class="button buttonA" onclick="button_clicked(1)">ACKERMANN</button>
-          <button class="button buttonStart" onclick="button_clicked(9)">MOTORS</button>
+
+      <div class="col-3">
+        <div class="row">
+          <div class="col-12">
+            <div class="alert alert-info">
+              <div id="status"></div>
+            </div>  
+          </div>
+          <div class="col-12">  
+            <button class="btn btn-warning btn-block" onclick="button_clicked(3)">CRABBING</button>
+          </div>
+          <div class="col-12">  
+            <button class="btn btn-primary btn-block mt-2" onclick="button_clicked(0)">SPOT TURN</button>
+          </div>
+          
+          <div class="col-12">  
+            <button class="btn btn-success btn-block mt-2" onclick="button_clicked(1)">ACKERMANN</button>
+          </div>
+          
+          <div class="col-12">  
+            <button class="btn btn-danger btn-block mt-4" onclick="button_clicked(9)">MOTORS</button>
+          </div>
         </div>
       </div>
     </div>
-  </main>
-
+  </div>
+  
+  <script src="jquery-3.5.1.slim.min.js"></script>
+  <script src="bootstrap.bundle.min.js"></script>
 
 </html>
