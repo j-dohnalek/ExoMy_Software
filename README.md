@@ -32,3 +32,7 @@ This repository contains all the files of the documentation of ExoMy. Just click
     <a href="https://www.instagram.com/exomy_rover/"> @ExoMy_Rover</a>
 </p>
 
+# Modification
+
+- Added 2 more paralax servos to rotate the head
+
